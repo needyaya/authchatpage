@@ -1,207 +1,93 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:email_validator/email_validator.dart';
-import 'package:dash_chat/dash_chat.dart';
-import 'package:grouped_list/grouped_list.dart';
-import 'package:intl/intl.dart';
 
-import '../tools/button.dart';
-import '../tools/chatcard.dart';
-import '../main.dart';
-import '../tools/textfield.dart';
+import '../pages/home.dart';
+import '../messeges.dart';
 
-class chat extends StatefulWidget {
-  const chat({super.key});
+class chatpage extends StatefulWidget {
+  String email;
+  chatpage({required this.email});
   @override
-  State<chat> createState() => _ChatState();
+  _chatpageState createState() => _chatpageState(email: email);
 }
 
-class _ChatState extends State<chat> {
-  final messagecontroller = TextEditingController();
-  List<MyMessageCard> messages = [
-    MyMessageCard(
-      message: 'ofcc',
-      date: DateTime.now().subtract(const Duration(days: 1, minutes: 1)),
-      user: true,
-    ),
-    MyMessageCard(
-      message: 'tomorow',
-      date: DateTime.now().subtract(const Duration(days: 4, minutes: 3)),
-      user: false,
-    ),
-    MyMessageCard(
-      message: 'hello',
-      date: DateTime.now().subtract(const Duration(days: 3, minutes: 5)),
-      user: true,
-    ),
-    MyMessageCard(
-      message: 'yay',
-      date: DateTime.now().subtract(Duration(days: 5, minutes: 1)),
-      user: false,
-    ),
-    MyMessageCard(
-      message: 'ofcc',
-      date: DateTime.now().subtract(Duration(days: 9, minutes: 3)),
-      user: false,
-    ),
-  ];
+class _chatpageState extends State<chatpage> {
+  String email;
+  _chatpageState({required this.email});
+
+  final fs = FirebaseFirestore.instance;
+  final _auth = FirebaseAuth.instance;
+  final TextEditingController message = new TextEditingController();
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-          appBar: AppBar(
-            elevation: 0,
-            automaticallyImplyLeading: false,
-            backgroundColor: Colors.white,
-            flexibleSpace: SafeArea(
-              child: Container(
-                padding: const EdgeInsets.only(right: 16),
-                child: Row(
-                  children: <Widget>[
-                    IconButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 2,
-                    ),
-                    const CircleAvatar(
-                      backgroundImage: NetworkImage(
-                          'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl-2.jpg',
-                          scale: 1),
-                      maxRadius: 20,
-                    ),
-                    const SizedBox(
-                      width: 12,
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          const Text(
-                            "THE DOORZ",
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w600),
-                          ),
-                          const SizedBox(
-                            height: 6,
-                          ),
-                          Text(
-                            "Online",
-                            style: TextStyle(
-                                color: Colors.grey.shade600, fontSize: 13),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.pink[200],
+        title: Center(
+          child: Text(
+            'groupchat',
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              height: MediaQuery.of(context).size.height * 0.79,
+              child: messages(
+                email: email,
               ),
             ),
-          ),
-          body: Stack(
-            children: <Widget>[
-              Expanded(
-                  child: GroupedListView<MyMessageCard, DateTime>(
-                elements: messages,
-                groupBy: (message) => DateTime(
-                    message.date.year, message.date.month, message.date.day),
-                groupHeaderBuilder: (MyMessageCard message) => SizedBox(
-                  height: 40,
-                  child: Center(
-                    child: Card(
-                      color: Colors.pink,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8),
-                        child: Text(
-                          DateFormat.yMMMd().format(message.date).toString(),
-                          style: const TextStyle(color: Colors.white),
-                        ),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: message,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.pink[100],
+                      hintText: 'message',
+                      enabled: true,
+                      contentPadding: const EdgeInsets.only(
+                          left: 14.0, bottom: 8.0, top: 8.0),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: new BorderSide(color: Colors.pink),
+                        borderRadius: new BorderRadius.circular(10),
+                      ),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: new BorderSide(color: Colors.pink),
+                        borderRadius: new BorderRadius.circular(10),
                       ),
                     ),
+                    validator: (value) {},
+                    onSaved: (value) {
+                      message.text = value!;
+                    },
                   ),
                 ),
-                itemBuilder: (context, MyMessageCard message) => Align(
-                  alignment: message.user
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-                  child: Card(
-                    elevation: 8,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Text(message.message),
-                    ),
-                  ),
+                IconButton(
+                  onPressed: () {
+                    if (message.text.isNotEmpty) {
+                      fs.collection('Messages').doc().set({
+                        'message': message.text.trim(),
+                        'time': DateTime.now(),
+                        'email': email,
+                      });
+
+                      message.clear();
+                    }
+                  },
+                  icon: Icon(Icons.send_sharp),
                 ),
-              )),
-              Align(
-                alignment: Alignment.bottomLeft,
-                child: Container(
-                  padding: const EdgeInsets.only(left: 10, bottom: 10, top: 10),
-                  height: 60,
-                  width: double.infinity,
-                  color: Colors.white,
-                  child: Row(
-                    children: <Widget>[
-                      GestureDetector(
-                        onTap: () {},
-                        child: Container(
-                          height: 30,
-                          width: 30,
-                          decoration: BoxDecoration(
-                            color: Colors.pink[200],
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                          child: const Icon(
-                            Icons.add,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 15,
-                      ),
-                      Expanded(
-                        child: TextField(
-                          controller: messagecontroller,
-                          decoration: const InputDecoration(
-                              hintText: " message...",
-                              hintStyle: TextStyle(color: Colors.black54),
-                              border: InputBorder.none),
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 15,
-                      ),
-                      FloatingActionButton(
-                        onPressed: () {
-                          print(messagecontroller.text);
-                          String text = messagecontroller.text;
-                          final message = MyMessageCard(
-                              message: text, date: DateTime.now(), user: true);
-                          setState(() => (messages.add(message)));
-                          messagecontroller.clear();
-                        },
-                        child: Icon(
-                          Icons.send,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                        backgroundColor: Colors.pink[200],
-                        elevation: 0,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          )),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
