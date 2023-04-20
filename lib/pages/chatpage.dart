@@ -1,9 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../pages/home.dart';
 import '../messeges.dart';
+import '../tools/services.dart';
 
 class chatpage extends StatefulWidget {
   String email;
@@ -79,6 +82,8 @@ class _chatpageState extends State<chatpage> {
                       });
 
                       message.clear();
+                      NotificationService().showNotification(
+                          title: 'Sample title', body: 'It works!');
                     }
                   },
                   icon: Icon(Icons.send_sharp),

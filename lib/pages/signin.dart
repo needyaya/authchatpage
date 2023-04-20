@@ -1,7 +1,7 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:email_validator/email_validator.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../pages/signin.dart';
 import '../pages/home.dart';
@@ -12,7 +12,9 @@ import '../pages/auth.dart';
 
 class Home extends StatefulWidget {
   final Function()? onTap;
-  const Home({super.key, required this.onTap});
+  final fb = FirebaseFirestore.instance;
+  Home({super.key, required this.onTap});
+
   @override
   _HomeState createState() => _HomeState();
 }
@@ -20,8 +22,25 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   String? errorMessage = '';
   bool isLogin = true;
+  String mtoken = " ";
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final fb = FirebaseFirestore.instance;
+  void getToken() async {
+    await FirebaseMessaging.instance.getToken().then((token) {
+      setState(() {
+        mtoken = token.toString();
+        print(mtoken);
+      });
+    });
+  }
+
+  void saveToken(String token) async {
+    await FirebaseFirestore.instance
+        .collection("Usertokens")
+        .doc("User1")
+        .set({"token": token});
+  }
 
   // sign user in method
   void signUserIn() async {
@@ -41,6 +60,10 @@ class _HomeState extends State<Home> {
         email: emailController.text,
         password: passwordController.text,
       );
+      fb.collection('Users').doc().set({
+        'email': emailController.text,
+      });
+
       // pop the loading circle
       Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
@@ -145,57 +168,12 @@ class _HomeState extends State<Home> {
 
                 const SizedBox(height: 10),
 
-                // forgot password?
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        'Forgot Password?',
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                ),
-
                 const SizedBox(height: 25),
 
                 // sign in button
-                MyButton(
-                  onTap: signUserIn,
-                  text:'sign in'
-                ),
+                MyButton(onTap: signUserIn, text: 'sign in'),
 
                 const SizedBox(height: 50),
-
-                // or continue with
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Divider(
-                          thickness: 0.5,
-                          color: Colors.grey[400],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                        child: Text(
-                          'Or continue with',
-                          style: TextStyle(color: Colors.grey[700]),
-                        ),
-                      ),
-                      Expanded(
-                        child: Divider(
-                          thickness: 0.5,
-                          color: Colors.grey[400],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
 
                 const SizedBox(height: 50),
 

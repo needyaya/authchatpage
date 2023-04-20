@@ -1,14 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class messages extends StatefulWidget {
   String email;
+  String messageTitle = "Empty";
+String notificationAlert = "alert";
+
+final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   messages({required this.email});
   @override
   _messagesState createState() => _messagesState(email: email);
 }
 
 class _messagesState extends State<messages> {
+  
   String email;
   _messagesState({required this.email});
 
@@ -17,6 +23,7 @@ class _messagesState extends State<messages> {
       .orderBy('time')
       .snapshots();
   @override
+  
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: _messageStream,
@@ -52,9 +59,9 @@ class _messagesState extends State<messages> {
                     child: ListTile(
                       shape: RoundedRectangleBorder(
                         side: BorderSide(
-                          color: Colors.purple,
+                          color: Colors.pink,
                         ),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(5),
                       ),
                       title: Text(
                         qs['email'],
