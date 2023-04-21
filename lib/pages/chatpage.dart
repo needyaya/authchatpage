@@ -16,6 +16,26 @@ class chatpage extends StatefulWidget {
 }
 
 class _chatpageState extends State<chatpage> {
+   void initState() {
+    String? notifTitle, notifBody;
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Got a message whilst in the foreground!');
+      print('Message data: ${message.data}');
+      if (message.notification != null) {
+        print('Message also contained a notification: ${message.notification}');
+        setState(() {
+          notifTitle = message.notification!.title;
+          notifBody = message.notification!.body;
+        });
+      }
+    });
+
+    super.initState();
+    FirebaseMessaging.instance
+        .getToken()
+        .then((value) => {print("FCM Token Is: "), print(value)});
+  }
+
   String email;
   _chatpageState({required this.email});
 
