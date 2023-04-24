@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -43,6 +46,13 @@ class _SignupPage extends State<SignupPage> {
           email: emailController.text,
           password: passwordController.text,
         );
+        if (passwordController.text.isNotEmpty &&
+            emailController.text.isNotEmpty) {
+          FirebaseFirestore.instance.collection('Users').doc().set({
+            'Userid': Random(),
+            'email': emailController.text,
+          });
+        }
       } else {
         PassworddontmatchMessage();
       }

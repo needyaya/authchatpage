@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../pages/home.dart';
 import '../messeges.dart';
@@ -16,7 +15,7 @@ class chatpage extends StatefulWidget {
 }
 
 class _chatpageState extends State<chatpage> {
-   void initState() {
+  void initState() {
     String? notifTitle, notifBody;
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Got a message whilst in the foreground!');
@@ -42,6 +41,7 @@ class _chatpageState extends State<chatpage> {
   final fs = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
   final TextEditingController message = new TextEditingController();
+  
 
   @override
   Widget build(BuildContext context) {
@@ -102,9 +102,7 @@ class _chatpageState extends State<chatpage> {
                       });
 
                       message.clear();
-                      NotificationService().showNotification(
-                          title: 'Sample title', body: 'It works!');
-                    }
+                        }
                   },
                   icon: Icon(Icons.send_sharp),
                 ),

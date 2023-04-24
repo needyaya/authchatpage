@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -35,11 +37,10 @@ class _HomeState extends State<Home> {
     });
   }
 
-  void saveToken(String token) async {
-    await FirebaseFirestore.instance
-        .collection("Usertokens")
-        .doc("User1")
-        .set({"token": token});
+
+
+  void email() {
+     emailController.text;
   }
 
   // sign user in method

@@ -1,9 +1,7 @@
-
 import 'package:auth/pages/chatpage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-
 
 import '../pages/auth.dart';
 import '../pages/chatpage.dart';
@@ -12,7 +10,6 @@ import '../pages/signin.dart';
 class MyHomePage extends StatelessWidget {
   MyHomePage({super.key});
   final user = FirebaseAuth.instance.currentUser!;
-
 
   // sign user out method
   void signUserOut() {
@@ -95,9 +92,8 @@ class MyHomePage extends StatelessWidget {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => chatpage(
-                            email: "aya",
-                          ),
+                          builder: (context) =>
+                              chatpage(email: user.email.toString()),
                         ));
                   },
                   child: Container(
