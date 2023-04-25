@@ -2,6 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import '../pages/home.dart';
 import '../messeges.dart';
@@ -15,33 +18,27 @@ class chatpage extends StatefulWidget {
 }
 
 class _chatpageState extends State<chatpage> {
-  void initState() {
-    String? notifTitle, notifBody;
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Got a message whilst in the foreground!');
-      print('Message data: ${message.data}');
-      if (message.notification != null) {
-        print('Message also contained a notification: ${message.notification}');
-        setState(() {
-          notifTitle = message.notification!.title;
-          notifBody = message.notification!.body;
-        });
-      }
-    });
-
-    super.initState();
-    FirebaseMessaging.instance
-        .getToken()
-        .then((value) => {print("FCM Token Is: "), print(value)});
-  }
-
   String email;
   _chatpageState({required this.email});
 
   final fs = FirebaseFirestore.instance;
   final _auth = FirebaseAuth.instance;
   final TextEditingController message = new TextEditingController();
-  
+  Future<void> notif() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    final _messageStreamController = BehaviorSubject<RemoteMessage>();
+    await Firebase.initializeApp();
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (kDebugMode) {
+        print('Handling a foreground message: ${message.messageId}');
+        print('Message data: ${message.data}');
+        print('Message notification: ${message.notification?.title}');
+        print('Message notification: ${message.notification?.body}');
+      }
+
+      _messageStreamController.sink.add(message);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +99,8 @@ class _chatpageState extends State<chatpage> {
                       });
 
                       message.clear();
-                        }
+                      notif();
+                    }
                   },
                   icon: Icon(Icons.send_sharp),
                 ),
